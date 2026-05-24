@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, PanInfo } from "framer-motion";
 import { getSiteConfig } from "../lib/config";
@@ -12,12 +12,47 @@ export default function Navbar() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [hoverIndicator, setHoverIndicator] = useState({ left: 0, width: 0, active: false });
   const navRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
   const [config, setConfig] = useState(defaultConfig);
 
   useEffect(() => {
     setConfig(getSiteConfig());
+  }, []);
+
+  const updateActiveIndicator = useCallback(() => {
+    if (!navRef.current) return;
+    const activeLink = navRef.current.querySelector(`[data-active="true"]`) as HTMLElement;
+    if (activeLink) {
+      const navRect = navRef.current.getBoundingClientRect();
+      const linkRect = activeLink.getBoundingClientRect();
+      setIndicatorStyle({
+        left: linkRect.left - navRect.left,
+        width: linkRect.width,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    updateActiveIndicator();
+    window.addEventListener("resize", updateActiveIndicator);
+    return () => window.removeEventListener("resize", updateActiveIndicator);
+  }, [pathname, updateActiveIndicator]);
+
+  const handleNavHover = useCallback((linkEl: HTMLElement | null, isEnter: boolean) => {
+    if (!navRef.current) return;
+    if (isEnter && linkEl) {
+      const navRect = navRef.current.getBoundingClientRect();
+      const linkRect = linkEl.getBoundingClientRect();
+      setHoverIndicator({
+        left: linkRect.left - navRect.left,
+        width: linkRect.width,
+        active: true,
+      });
+    } else {
+      setHoverIndicator((prev) => ({ ...prev, active: false }));
+    }
   }, []);
 
   const wheelRef = useRef<HTMLDivElement>(null);
@@ -83,55 +118,49 @@ export default function Navbar() {
     { name: "关于", href: "/about" },
   ];
 
-  useEffect(() => {
-    const updateIndicator = () => {
-      if (!navRef.current) return;
-      const activeLink = navRef.current.querySelector(`[data-active="true"]`) as HTMLElement;
-      if (activeLink) {
-        const navRect = navRef.current.getBoundingClientRect();
-        const linkRect = activeLink.getBoundingClientRect();
-        setIndicatorStyle({
-          left: linkRect.left - navRect.left,
-          width: linkRect.width,
-        });
-      }
-    };
-    updateIndicator();
-    window.addEventListener("resize", updateIndicator);
-    return () => window.removeEventListener("resize", updateIndicator);
-  }, [pathname]);
-
   const mobileNavLinks = navLinks;
 
   return (
     <>
       <header
-        className={`hidden md:block w-full fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        className={`hidden md:block w-full fixed top-0 left-0 right-0 z-50 transition-all duration-500 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 ${
           showNav ? "translate-y-0" : "-translate-y-full"
         }`}
-        style={{
-          background: "rgba(255,255,255,0.35)",
-          backdropFilter: "blur(20px) saturate(1.8)",
-          WebkitBackdropFilter: "blur(20px) saturate(1.8)",
-          borderBottom: "1px solid rgba(255,255,255,0.25)",
-          boxShadow: "0 4px 30px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.3)",
-        }}
       >
         <div className="w-[90%] max-w-6xl mx-auto h-16 flex items-center justify-between px-4 sm:px-[30px] box-border">
           <Link
             href="/"
-            className="text-xl font-black text-slate-800 dark:text-white tracking-tighter hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 relative group"
+            className="text-xl font-black tracking-tighter relative group flex items-baseline gap-0.5"
           >
-            {config.navTitle || config.authorName}
-            <span className="text-indigo-500 mx-1">{config.navSuffix || "の"}</span>
-            {config.navAfter || "幻想乡"}
-            <span className="absolute -bottom-0.5 left-0 w-0 h-[2px] bg-indigo-500 rounded-full group-hover:w-full transition-all duration-300"></span>
+            <span className="text-slate-800 dark:text-white transition-colors duration-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+              {config.navTitle || config.authorName}
+            </span>
+            <span className="text-indigo-400 dark:text-indigo-500 transition-colors duration-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">{config.navSuffix || "の"}</span>
+            <span className="text-slate-800 dark:text-white transition-colors duration-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+              {config.navAfter || "幻想乡"}
+            </span>
+            <span
+              className="absolute -bottom-1 left-0 h-[2px] rounded-full bg-indigo-500/70"
+              style={{ width: "var(--underline-width, 0%)", transition: "width 0.35s cubic-bezier(0.25, 0.8, 0.25, 1.0)" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.setProperty("--underline-width", "100%"); }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.setProperty("--underline-width", "0%"); }}
+            />
           </Link>
           <nav ref={navRef as any} className="relative flex gap-1 text-sm font-bold">
             <motion.div
-              className="absolute top-0 h-full rounded-xl bg-indigo-500/10 dark:bg-indigo-400/15 z-0 pointer-events-none"
+              className="absolute top-0 h-full rounded-xl bg-indigo-500/8 dark:bg-indigo-400/10 z-0 pointer-events-none"
               animate={{ left: indicatorStyle.left, width: indicatorStyle.width }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            />
+            <motion.div
+              className="absolute bottom-1.5 h-[2px] rounded-full z-0 pointer-events-none bg-indigo-500/60"
+              initial={false}
+              animate={{
+                left: hoverIndicator.active ? hoverIndicator.left : -100,
+                width: hoverIndicator.active ? hoverIndicator.width : 0,
+                opacity: hoverIndicator.active ? 1 : 0,
+              }}
+              transition={{ type: "spring", stiffness: 400, damping: 28 }}
             />
             {navLinks.map((link) => {
               const isActive = pathname === link.href || pathname === `${link.href}/`;
@@ -140,13 +169,20 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   data-active={isActive ? "true" : "false"}
-                  className={`relative z-10 px-4 py-1.5 rounded-xl transition-colors duration-300 ${
+                  onMouseEnter={(e) => handleNavHover(e.currentTarget, true)}
+                  onMouseLeave={() => handleNavHover(null as any, false)}
+                  className={`relative z-10 px-4 py-1.5 rounded-xl transition-all duration-300 ${
                     isActive
-                      ? "text-indigo-600 dark:text-indigo-300"
-                      : "text-slate-600 dark:text-slate-300 hover:text-indigo-500 dark:hover:text-indigo-400"
+                      ? "text-indigo-600 dark:text-indigo-300 font-black"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                   }`}
                 >
                   {link.name}
+                  <span
+                    className={`absolute bottom-1.5 left-1/2 -translate-x-1/2 h-[2px] rounded-full bg-indigo-500/70 transition-all duration-300 ease-out ${
+                      isActive ? "w-[60%] opacity-100" : "w-0 opacity-0"
+                    }`}
+                  />
                 </Link>
               );
             })}

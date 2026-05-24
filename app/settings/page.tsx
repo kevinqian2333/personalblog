@@ -96,6 +96,12 @@ export default function SettingsPage() {
       });
       const data = await res.json();
       if (data.success) {
+        if (section === "music") {
+          const existing = JSON.parse(localStorage.getItem("site-settings") || "{}");
+          existing.cloudMusicIds = payload.cloudMusicIds;
+          localStorage.setItem("site-settings", JSON.stringify(existing));
+          window.dispatchEvent(new Event("site-settings-changed"));
+        }
         setDeployMsg("✅ 已写入 siteConfig.ts！运行 `npm run build` 后永久生效");
         showToast("配置已保存到服务器", "success");
       } else {

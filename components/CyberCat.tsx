@@ -1,76 +1,81 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "./ThemeProvider";
+import { motion, AnimatePresence, useMotionValue, useDragControls } from "framer-motion";
 
-/* ──────────────────────────────────────────────
-   Custom SVG Icons
-   ────────────────────────────────────────────── */
-
-function CatFaceSVG({ className = "w-full h-full" }: { className?: string }) {
+function SparkIcon({ className = "w-full h-full" }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <ellipse cx="12" cy="14" rx="8" ry="6.5" fill="white" stroke="#818cf8" strokeWidth="1.2" />
-      <path d="M4 12 L7 7 L9 4 L11 7 L13 3 L15 6 L17 4 L19 7 L20 12" fill="white" stroke="#818cf8" strokeWidth="1" />
-      <ellipse cx="12" cy="14" rx="6" ry="4.5" fill="#f5f3ff" />
-      <ellipse cx="9" cy="13" rx="1.2" ry="1.6" fill="#6366f1" />
-      <ellipse cx="15" cy="13" rx="1.2" ry="1.6" fill="#6366f1" />
-      <ellipse cx="9.3" cy="12.5" rx="0.4" ry="0.5" fill="white" />
-      <ellipse cx="15.3" cy="12.5" rx="0.4" ry="0.5" fill="white" />
-      <path d="M9 16 Q12 18 15 16" stroke="#818cf8" strokeWidth="0.7" fill="none" strokeLinecap="round" />
-      <line x1="12" y1="8" x2="12" y2="10" stroke="#818cf8" strokeWidth="0.7" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3l1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5z" />
+      <path d="M18 16l.8 2.2L21 19l-2.2.8L18 22l-.8-2.2L15 19l2.2-.8z" opacity="0.6" />
     </svg>
   );
 }
 
-function GearSVG({ className = "w-full h-full" }: { className?: string }) {
+function GearIcon({ className = "w-full h-full" }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
       <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
     </svg>
   );
 }
 
-function XSVG({ className = "w-full h-full" }: { className?: string }) {
+function CloseIcon({ className = "w-full h-full" }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   );
 }
 
-/* ──────────────────────────────────────────────
-   CyberCat Component
-   ────────────────────────────────────────────── */
+function SendIcon({ className = "w-full h-full" }: { className?: string }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+    </svg>
+  );
+}
+
+const DEFAULT_PROMPT = "你现在是一只傲娇、聪明、有点毒舌但很可爱的暹罗猫。你的名字叫\"煤球\"。你的主人是一个喜欢折腾代码的极客。你说话必须简短，每次最多一两句话。喜欢在句尾加上\"喵~\"或者\"喵呜~\"。绝对不要承认自己是一个AI模型，你就是一只真实的猫。";
+
+const WELCOME_MSG = "喵~ 我是煤球，你的AI猫娘助手！有什么可以帮你的喵？";
 
 export default function CyberCat() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>([
-    { role: "assistant", content: "喵~ 我是你的AI猫娘助手！有什么可以帮你的吗？" },
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>(() => [
+    { role: "assistant", content: WELCOME_MSG },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState(() => {
     try {
-      return localStorage.getItem("cat-system-prompt") || "你是一只傲娇、聪明、有点毒舌但很可爱的暹罗猫。你的名字叫\"煤球\"。你的主人是一个喜欢折腾代码的极客。你说话必须简短，每次最多一两句话。喜欢在句尾加上\"喵~\"或者\"喵呜~\"。绝对不要承认自己是一个AI模型，你就是一只真实的猫。";
+      return localStorage.getItem("cat-system-prompt") || DEFAULT_PROMPT;
     } catch {
-      return "你是一只傲娇、聪明、有点毒舌但很可爱的暹罗猫。你的名字叫\"煤球\"。你的主人是一个喜欢折腾代码的极客。你说话必须简短，每次最多一两句话。喜欢在句尾加上\"喵~\"或者\"喵呜~\"。绝对不要承认自己是一个AI模型，你就是一只真实的猫。";
+      return DEFAULT_PROMPT;
     }
   });
-  const [showPromptSettings, setShowPromptSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKey, setApiKey] = useState(() => {
     try { return localStorage.getItem("deepseek-api-key") || ""; } catch { return ""; }
   });
   const bottomRef = useRef<HTMLDivElement>(null);
-  const { isDark } = useTheme();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dragX = useMotionValue(0);
+  const dragY = useMotionValue(0);
+  const dragControls = useDragControls();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 200);
+    }
+  }, [isOpen]);
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
@@ -98,12 +103,12 @@ export default function CyberCat() {
         }),
       });
       const data = await res.json();
-      const reply = data.choices?.[0]?.message?.content || "喵？信号不好，再说一遍喵~";
+      const reply = data.choices?.[0]?.message?.content || "抱歉，回复出错了，请重试。";
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "喵呜... 网络好像不太好，稍后再试试喵~" },
+        { role: "assistant", content: "网络连接失败，请稍后再试。" },
       ]);
     } finally {
       setLoading(false);
@@ -117,16 +122,6 @@ export default function CyberCat() {
     }
   };
 
-  const savePrompt = (prompt: string) => {
-    setSystemPrompt(prompt);
-    try { localStorage.setItem("cat-system-prompt", prompt); } catch {}
-  };
-
-  const saveApiKey = (key: string) => {
-    setApiKey(key);
-    try { localStorage.setItem("deepseek-api-key", key); } catch {}
-  };
-
   const messageVariants = {
     hidden: { opacity: 0, y: 10, scale: 0.95 },
     visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring" as const, stiffness: 300, damping: 25 } },
@@ -134,142 +129,134 @@ export default function CyberCat() {
 
   return (
     <>
-      {/* Floating button with breathing glow */}
-      <motion.button
-        onClick={() => setIsOpen(!isOpen)}
-        whileHover={{ scale: 1.15, rotate: -5 }}
-        whileTap={{ scale: 0.85, rotate: 10 }}
-        className="fixed bottom-6 right-6 z-[9998] w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-xl shadow-indigo-500/30 border-2 border-white/40 dark:border-white/20 flex items-center justify-center cursor-pointer group"
+      <motion.div
+        className="fixed z-[9998]"
+        style={{ bottom: 24, right: 24 }}
       >
-        {/* Breathing glow ring */}
-        <motion.span
-          className="absolute inset-0 rounded-2xl"
-          animate={{
-            boxShadow: [
-              "0 0 8px 2px rgba(99,102,241,0.4)",
-              "0 0 20px 6px rgba(139,92,246,0.6)",
-              "0 0 8px 2px rgba(99,102,241,0.4)",
-            ],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        <span className="relative w-7 h-7 transition-transform duration-300 group-hover:scale-110">
-          <CatFaceSVG />
-        </span>
-        <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white dark:border-slate-800 animate-pulse" />
-      </motion.button>
+        <motion.button
+          drag
+          dragMomentum={false}
+          dragElastic={0.05}
+          onClick={() => setIsOpen(!isOpen)}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 shadow-lg shadow-slate-300/30 dark:shadow-black/30 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-center cursor-pointer backdrop-blur-lg transition-colors hover:bg-slate-50 dark:hover:bg-slate-700"
+        >
+          <span className="w-5 h-5 text-indigo-500 dark:text-indigo-400">
+            <SparkIcon />
+          </span>
+        </motion.button>
+      </motion.div>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed bottom-24 right-6 z-[9998] w-80 sm:w-96 h-[520px] rounded-3xl overflow-hidden flex flex-col"
+            drag
+            dragControls={dragControls}
+            dragListener={false}
+            dragMomentum={false}
+            dragElastic={0.05}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300, damping: 28 }}
+            className="fixed bottom-20 right-6 z-[9998] w-80 sm:w-96 h-[500px] rounded-2xl overflow-hidden flex flex-col shadow-2xl shadow-slate-300/20 dark:shadow-black/40"
             style={{
-              background: "rgba(255,255,255,0.7)",
-              backdropFilter: "blur(24px) saturate(1.8)",
-              WebkitBackdropFilter: "blur(24px) saturate(1.8)",
-              border: "1px solid rgba(255,255,255,0.3)",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.2), inset 0 1px 0 rgba(255,255,255,0.4)",
+              x: dragX,
+              y: dragY,
+              background: "rgba(255,255,255,0.85)",
+              backdropFilter: "blur(20px) saturate(1.8)",
+              WebkitBackdropFilter: "blur(20px) saturate(1.8)",
+              border: "1px solid rgba(0,0,0,0.08)",
             }}
           >
-            {/* Header */}
             <div
-              className="flex items-center justify-between p-4"
-              style={{
-                background: "rgba(99,102,241,0.08)",
-                borderBottom: "1px solid rgba(255,255,255,0.2)",
-              }}
+              className="flex items-center justify-between px-4 py-3 flex-shrink-0 cursor-grab active:cursor-grabbing rounded-t-2xl"
+              onPointerDown={(e) => dragControls.start(e)}
+              style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", touchAction: "none", background: "rgba(249,250,251,0.4)" }}
             >
-              <div className="flex items-center gap-3">
-                <motion.div
-                  animate={{ rotate: [0, -10, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
-                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center shadow-md"
-                >
-                  <span className="w-6 h-6">
-                    <CatFaceSVG />
+              <div className="flex items-center gap-2.5 pointer-events-none">
+                <div className="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center">
+                  <span className="w-4 h-4 text-indigo-500 dark:text-indigo-400">
+                    <SparkIcon />
                   </span>
-                </motion.div>
+                </div>
                 <div>
-                  <h3 className="font-black text-slate-800 dark:text-white text-sm">煤球 · AI猫娘</h3>
-                  <p className="text-[10px] text-indigo-500 dark:text-indigo-400 font-medium">Powered by DeepSeek</p>
+                  <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-200">煤球 · AI猫娘</h3>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500">DeepSeek Chat</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1">
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setShowPromptSettings(!showPromptSettings)}
-                  className="w-7 h-7 rounded-lg bg-white/40 dark:bg-slate-700/40 flex items-center justify-center hover:bg-white/60 dark:hover:bg-slate-600/60 transition-colors"
-                  title="设置提示词"
+              <div className="flex items-center gap-0.5">
+                <button
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
                 >
-                  <span className="w-4 h-4">
-                    <GearSVG />
-                  </span>
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.1, rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setIsOpen(false)}
-                  className="w-7 h-7 rounded-lg bg-white/40 dark:bg-slate-700/40 flex items-center justify-center hover:bg-red-400 hover:text-white transition-colors"
+                  <span className="w-3.5 h-3.5"><GearIcon /></span>
+                </button>
+                <button
+                  onClick={() => {
+                    dragX.set(0);
+                    dragY.set(0);
+                    setIsOpen(false);
+                  }}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
                 >
-                  <span className="w-3.5 h-3.5">
-                    <XSVG />
-                  </span>
-                </motion.button>
+                  <span className="w-3.5 h-3.5"><CloseIcon /></span>
+                </button>
               </div>
             </div>
 
-            {/* Settings Panel */}
             <AnimatePresence>
-              {showPromptSettings && (
+              {showSettings && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden border-b border-white/20 dark:border-white/10 bg-amber-50/80 dark:bg-amber-900/20 p-3"
+                  className="overflow-hidden border-b border-slate-100 dark:border-slate-700/30"
                 >
-                  <p className="text-xs font-bold text-amber-700 dark:text-amber-300 mb-2">系统提示词</p>
-                  <input
-                    type="text"
-                    value={systemPrompt}
-                    onChange={(e) => savePrompt(e.target.value)}
-                    placeholder="我是一个猫娘..."
-                    className="w-full text-xs bg-white/60 dark:bg-slate-700/60 border border-amber-200 dark:border-amber-700/30 rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500/50 text-slate-800 dark:text-white transition-all"
-                  />
-                  <div className="mt-2 flex items-center gap-2">
-                    <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400">API Key</p>
-                    <button
-                      onClick={() => setShowApiKey(!showApiKey)}
-                      className="text-[10px] text-indigo-500 hover:text-indigo-600 font-bold"
-                    >
-                      {showApiKey ? "隐藏" : "展开"}
-                    </button>
-                  </div>
-                  {showApiKey && (
-                    <motion.div initial={{ height: 0 }} animate={{ height: "auto" }}>
+                  <div className="px-4 py-3 space-y-3 bg-slate-50/80 dark:bg-slate-800/30">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block mb-1">系统提示词</label>
                       <input
-                        type="password"
-                        value={apiKey}
-                        onChange={(e) => saveApiKey(e.target.value)}
-                        placeholder="sk-xxxxxxxxxxxxxxxx"
-                        className="w-full text-xs bg-white/60 dark:bg-slate-700/60 border border-amber-200 dark:border-amber-700/30 rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500/50 text-slate-800 dark:text-white mt-1 transition-all"
+                        type="text"
+                        value={systemPrompt}
+                        onChange={(e) => {
+                          setSystemPrompt(e.target.value);
+                          try { localStorage.setItem("cat-system-prompt", e.target.value); } catch {}
+                        }}
+                        className="w-full text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500/30 text-slate-700 dark:text-slate-200 transition-all"
                       />
-                    </motion.div>
-                  )}
-                  <p className="text-[9px] text-amber-500 dark:text-amber-400 mt-1">Key 仅存储在浏览器本地</p>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">API Key</label>
+                        <button
+                          onClick={() => setShowApiKey(!showApiKey)}
+                          className="text-[10px] text-indigo-500 hover:text-indigo-600 font-medium"
+                        >
+                          {showApiKey ? "隐藏" : "展开"}
+                        </button>
+                      </div>
+                      {showApiKey && (
+                        <input
+                          type="password"
+                          value={apiKey}
+                          onChange={(e) => {
+                            setApiKey(e.target.value);
+                            try { localStorage.setItem("deepseek-api-key", e.target.value); } catch {}
+                          }}
+                          placeholder="sk-..."
+                          className="w-full text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500/30 text-slate-700 dark:text-slate-200 transition-all"
+                        />
+                      )}
+                      <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Key 仅在本地存储，不会上传</p>
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
               {messages.map((msg, i) => (
                 <motion.div
                   key={i}
@@ -279,17 +266,17 @@ export default function CyberCat() {
                   className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   {msg.role === "assistant" && (
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center mr-2 flex-shrink-0 self-end">
-                      <span className="w-4 h-4">
-                        <CatFaceSVG />
+                    <div className="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center mr-2 flex-shrink-0 self-end">
+                      <span className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400">
+                        <SparkIcon />
                       </span>
                     </div>
                   )}
                   <div
                     className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                       msg.role === "user"
-                        ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-br-md shadow-md"
-                        : "bg-white/70 dark:bg-slate-700/70 text-slate-800 dark:text-white rounded-bl-md border border-white/40 dark:border-white/10 shadow-sm"
+                        ? "bg-indigo-500 text-white rounded-br-md"
+                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-bl-md border border-slate-200/60 dark:border-slate-700/60"
                     }`}
                   >
                     {msg.content}
@@ -302,28 +289,16 @@ export default function CyberCat() {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex justify-start items-end gap-2"
                 >
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center flex-shrink-0">
-                    <span className="w-4 h-4">
-                      <CatFaceSVG />
+                  <div className="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0">
+                    <span className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400">
+                      <SparkIcon />
                     </span>
                   </div>
-                  <div className="bg-white/70 dark:bg-slate-700/70 rounded-2xl rounded-bl-md px-4 py-3 border border-white/40 dark:border-white/10 shadow-sm">
-                    <div className="flex gap-1.5">
-                      <motion.span
-                        animate={{ y: [0, -5, 0] }}
-                        transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
-                        className="w-2 h-2 bg-indigo-400 rounded-full"
-                      />
-                      <motion.span
-                        animate={{ y: [0, -5, 0] }}
-                        transition={{ duration: 0.6, repeat: Infinity, delay: 0.15 }}
-                        className="w-2 h-2 bg-purple-400 rounded-full"
-                      />
-                      <motion.span
-                        animate={{ y: [0, -5, 0] }}
-                        transition={{ duration: 0.6, repeat: Infinity, delay: 0.3 }}
-                        className="w-2 h-2 bg-pink-400 rounded-full"
-                      />
+                  <div className="bg-white dark:bg-slate-800 rounded-2xl rounded-bl-md px-4 py-3 border border-slate-200/60 dark:border-slate-700/60">
+                    <div className="flex gap-1">
+                      <motion.span animate={{ y: [0, -4, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0 }} className="w-1.5 h-1.5 bg-indigo-400 rounded-full" />
+                      <motion.span animate={{ y: [0, -4, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.12 }} className="w-1.5 h-1.5 bg-indigo-400 rounded-full" />
+                      <motion.span animate={{ y: [0, -4, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.24 }} className="w-1.5 h-1.5 bg-indigo-400 rounded-full" />
                     </div>
                   </div>
                 </motion.div>
@@ -331,30 +306,28 @@ export default function CyberCat() {
               <div ref={bottomRef} />
             </div>
 
-            {/* Input */}
             <div
-              className="p-3"
-              style={{ borderTop: "1px solid rgba(255,255,255,0.2)" }}
+              className="p-3 flex-shrink-0"
+              style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
             >
               <div className="flex gap-2">
                 <input
+                  ref={inputRef}
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="和煤球聊天喵~"
-                  className="flex-1 bg-white/50 dark:bg-slate-700/50 border border-white/30 dark:border-white/10 rounded-2xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500/50 text-slate-800 dark:text-white placeholder-slate-400 transition-all"
+                  className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 transition-all"
                 />
                 <motion.button
-                  whileHover={{ scale: 1.08 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.06 }}
+                  whileTap={{ scale: 0.94 }}
                   onClick={handleSend}
-                  disabled={loading}
-                  className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:opacity-50 text-white rounded-2xl flex items-center justify-center transition-all shadow-md shadow-indigo-500/20"
+                  disabled={loading || !input.trim()}
+                  className="w-10 h-10 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl flex items-center justify-center transition-colors"
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                  </svg>
+                  <span className="w-4 h-4"><SendIcon /></span>
                 </motion.button>
               </div>
             </div>

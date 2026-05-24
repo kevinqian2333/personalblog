@@ -502,6 +502,10 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (data.success) {
+        const existing = JSON.parse(localStorage.getItem("site-settings") || "{}");
+        existing.cloudMusicIds = ids;
+        localStorage.setItem("site-settings", JSON.stringify(existing));
+        window.dispatchEvent(new Event("site-settings-changed"));
         showToast("\u2705 音乐配置已保存到服务器", "success");
       } else {
         showToast("保存失败: " + (data.error || "未知错误"), "error");

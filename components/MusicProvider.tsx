@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useRef, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useRef, useEffect, useCallback, ReactNode } from "react";
 import { siteConfig } from "../siteConfig";
 import type { SongMeta } from "../lib/types";
 
@@ -70,63 +70,84 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const [playMode, setPlayMode] = useState<PlayMode>("loop");
 
   const audioRef = useRef<HTMLAudioElement>(null);
+  const mountRef = useRef(true);
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchMusicData = async () => {
-      try {
-        let ids = siteConfig.cloudMusicIds;
-        try {
-          const saved = localStorage.getItem("site-settings");
-          if (saved) {
-            const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed.cloudMusicIds) && parsed.cloudMusicIds.length > 0) {
-              ids = parsed.cloudMusicIds;
-            }
-          }
-        } catch {}
-        if (!ids || ids.length === 0) {
-          if (isMounted) setIsLoading(false);
-          return;
-        }
-        const fetchPromises = ids.map((id) =>
-          fetch(`https://api.injahow.cn/meting/?server=netease&type=song&id=${id}`)
-            .then((res) => res.json())
-            .catch(() => null)
-        );
-        const results = await Promise.all(fetchPromises);
-        const mergedPlaylist = results
-          .filter((res) => res && res.length > 0)
-          .map((res) => ({
-            id: res[0].id || Math.random().toString(),
-            title: res[0].name || res[0].title || "未知歌曲",
-            artist: res[0].author || res[0].artist || "未知歌手",
-            cover: res[0].pic || res[0].cover || "https://bu.dusays.com/2026/03/24/69c24230a5ff8.jpg",
-            src: res[0].url,
-            lrcUrl: res[0].lrc,
-            lyrics: [],
-          }))
-          .filter((song) => song.src);
-
-        if (isMounted) {
-          if (mergedPlaylist.length > 0) setPlaylist(mergedPlaylist);
-          else setCurrentLyric("云端链路受阻");
-          setIsLoading(false);
-        }
-      } catch {
-        if (isMounted) {
-          setCurrentLyric("网络初始化失败");
-          setIsLoading(false);
+  function getMusicIds(): string[] {
+    try {
+      const saved = localStorage.getItem("site-settings");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed.cloudMusicIds) && parsed.cloudMusicIds.length > 0) {
+          return parsed.cloudMusicIds;
         }
       }
-    };
+    } catch {}
+    return siteConfig.cloudMusicIds || [];
+  }
 
+  const fetchMusicData = useCallback(async () => {
+    setIsLoading(true);
+    const ids = getMusicIds();
+    if (!ids || ids.length === 0) {
+      setPlaylist([]);
+      setCurrentLyric("请配置 cloudMusicIds");
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const fetchPromises = ids.map((id) =>
+        fetch(`https://api.injahow.cn/meting/?server=netease&type=song&id=${id}`)
+          .then((res) => res.json())
+          .catch(() => null)
+      );
+      const results = await Promise.all(fetchPromises);
+      const mergedPlaylist = results
+        .filter((res) => res && res.length > 0)
+        .map((res) => ({
+          id: res[0].id || Math.random().toString(),
+          title: res[0].name || res[0].title || "未知歌曲",
+          artist: res[0].author || res[0].artist || "未知歌手",
+          cover: res[0].pic || res[0].cover || "https://bu.dusays.com/2026/03/24/69c24230a5ff8.jpg",
+          src: res[0].url,
+          lrcUrl: res[0].lrc,
+          lyrics: [],
+        }))
+        .filter((song) => song.src);
+
+      if (mountRef.current) {
+        if (mergedPlaylist.length > 0) {
+          setPlaylist(mergedPlaylist);
+          setCurrentIndex(0);
+        } else {
+          setCurrentLyric("云端链路受阻");
+        }
+        setIsLoading(false);
+      }
+    } catch {
+      if (mountRef.current) {
+        setCurrentLyric("网络初始化失败");
+        setIsLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    mountRef.current = true;
     fetchMusicData();
 
-    return () => {
-      isMounted = false;
+    const handleSettingsChange = () => {
+      fetchMusicData();
     };
-  }, []);
+
+    window.addEventListener("site-settings-changed", handleSettingsChange);
+    window.addEventListener("storage", handleSettingsChange);
+
+    return () => {
+      mountRef.current = false;
+      window.removeEventListener("site-settings-changed", handleSettingsChange);
+      window.removeEventListener("storage", handleSettingsChange);
+    };
+  }, [fetchMusicData]);
 
   useEffect(() => {
     if (playlist.length === 0) return;

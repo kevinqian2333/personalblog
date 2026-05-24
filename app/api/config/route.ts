@@ -8,11 +8,9 @@ function readCurrentConfig(): Record<string, any> {
   const raw = fs.readFileSync(CONFIG_PATH, "utf8");
   const match = raw.match(/export const siteConfig = ([\s\S]*?);\s*$/);
   if (!match) throw new Error("无法解析 siteConfig.ts");
-  const escaped = match[1]
-    .replace(/([{,]\s*)([a-zA-Z_]\w*)\s*:/g, '$1"$2":')
-    .replace(/'/g, '"');
   try {
-    return JSON.parse(escaped);
+    const fn = new Function(`return ${match[1]}`);
+    return fn();
   } catch {
     throw new Error("siteConfig.ts 格式错误，无法解析");
   }
