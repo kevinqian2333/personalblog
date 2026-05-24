@@ -11,6 +11,7 @@ export const siteConfig = {
   avatarUrl: "https://bu.dusays.com/2026/03/24/69c1e38ac1846.jpg",
 
   useGradient: false,
+  bgBlur: 8,
   themeColors: ["#a18cd1", "#fbc2eb", "#a1c4fd", "#c2e9fb"],
 
   bgImages: [
@@ -76,6 +77,8 @@ export const siteConfig = {
   },
 
   friendLinkApplyFormat: "名称：无敌猫猫拳の幻想乡\n简介：今天我也要学习吗\n链接：https://www.xinghuisama.top\n头像：https://bu.dusays.com/2026/03/24/69c1e38ac1846.jpg",
+
+  friendLinkIntro: "欢迎交换友链！请按照以下格式在评论区留言，我会尽快添加～",
 
   enableLevelSystem: true,
 };

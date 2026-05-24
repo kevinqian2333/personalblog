@@ -5,13 +5,20 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, PanInfo } from "framer-motion";
 import { getSiteConfig } from "../lib/config";
+import { siteConfig as defaultConfig } from "../siteConfig";
 
 export default function Navbar() {
   const [showNav, setShowNav] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const navRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
-  const config = getSiteConfig();
+  const [config, setConfig] = useState(defaultConfig);
+
+  useEffect(() => {
+    setConfig(getSiteConfig());
+  }, []);
 
   const wheelRef = useRef<HTMLDivElement>(null);
   const rawRotation = useMotionValue(0);
@@ -76,41 +83,70 @@ export default function Navbar() {
     { name: "关于", href: "/about" },
   ];
 
+  useEffect(() => {
+    const updateIndicator = () => {
+      if (!navRef.current) return;
+      const activeLink = navRef.current.querySelector(`[data-active="true"]`) as HTMLElement;
+      if (activeLink) {
+        const navRect = navRef.current.getBoundingClientRect();
+        const linkRect = activeLink.getBoundingClientRect();
+        setIndicatorStyle({
+          left: linkRect.left - navRect.left,
+          width: linkRect.width,
+        });
+      }
+    };
+    updateIndicator();
+    window.addEventListener("resize", updateIndicator);
+    return () => window.removeEventListener("resize", updateIndicator);
+  }, [pathname]);
+
   const mobileNavLinks = navLinks;
 
   return (
     <>
       <header
-        className={`hidden md:block w-full fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${
+        className={`hidden md:block w-full fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           showNav ? "translate-y-0" : "-translate-y-full"
-        } bg-white/40 dark:bg-slate-900/50 backdrop-blur-xl border-white/20 dark:border-white/5 shadow-sm`}
+        }`}
+        style={{
+          background: "rgba(255,255,255,0.35)",
+          backdropFilter: "blur(20px) saturate(1.8)",
+          WebkitBackdropFilter: "blur(20px) saturate(1.8)",
+          borderBottom: "1px solid rgba(255,255,255,0.25)",
+          boxShadow: "0 4px 30px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.3)",
+        }}
       >
         <div className="w-[90%] max-w-6xl mx-auto h-16 flex items-center justify-between px-4 sm:px-[30px] box-border">
           <Link
             href="/"
-            className="text-xl font-black text-slate-800 dark:text-white tracking-tighter hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300"
+            className="text-xl font-black text-slate-800 dark:text-white tracking-tighter hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 relative group"
           >
             {config.navTitle || config.authorName}
             <span className="text-indigo-500 mx-1">{config.navSuffix || "の"}</span>
             {config.navAfter || "幻想乡"}
+            <span className="absolute -bottom-0.5 left-0 w-0 h-[2px] bg-indigo-500 rounded-full group-hover:w-full transition-all duration-300"></span>
           </Link>
-          <nav className="flex gap-8 text-sm font-bold">
+          <nav ref={navRef as any} className="relative flex gap-1 text-sm font-bold">
+            <motion.div
+              className="absolute top-0 h-full rounded-xl bg-indigo-500/10 dark:bg-indigo-400/15 z-0 pointer-events-none"
+              animate={{ left: indicatorStyle.left, width: indicatorStyle.width }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            />
             {navLinks.map((link) => {
               const isActive = pathname === link.href || pathname === `${link.href}/`;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`relative py-1 transition-colors ${
+                  data-active={isActive ? "true" : "false"}
+                  className={`relative z-10 px-4 py-1.5 rounded-xl transition-colors duration-300 ${
                     isActive
-                      ? "text-indigo-600 dark:text-indigo-400"
-                      : "text-slate-700 dark:text-slate-200 hover:text-indigo-600"
+                      ? "text-indigo-600 dark:text-indigo-300"
+                      : "text-slate-600 dark:text-slate-300 hover:text-indigo-500 dark:hover:text-indigo-400"
                   }`}
                 >
                   {link.name}
-                  {isActive && (
-                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-indigo-500 rounded-full animate-pulse"></span>
-                  )}
                 </Link>
               );
             })}
@@ -167,7 +203,7 @@ export default function Navbar() {
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-700 border-4 border-slate-300 dark:border-slate-500 flex items-center justify-center shadow-inner z-10">
                     <button
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="w-12 h-12 rounded-full bg-indigo-500 flex items-center justify-center text-white font-black shadow-lg hover:bg-red-500 hover:rotate-90 transition-all duration-300 active:scale-95"
+                      className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black shadow-lg hover:from-red-500 hover:to-pink-600 hover:rotate-90 transition-all duration-300 active:scale-95"
                     >
                       ✕
                     </button>
@@ -189,8 +225,8 @@ export default function Navbar() {
                             onClick={() => setIsMobileMenuOpen(false)}
                             className={`flex items-center justify-center w-full h-full rounded-full transition-all duration-300 ${
                               isActive
-                                ? "bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.8)] scale-110"
-                                : "bg-white/90 dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-md hover:scale-110 border border-white/50 dark:border-slate-600"
+                                ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-[0_0_20px_rgba(99,102,241,0.7)] scale-110"
+                                : "bg-white/90 dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-md hover:scale-110 hover:shadow-lg border border-white/50 dark:border-slate-600"
                             }`}
                           >
                             <span className="text-[11px] font-black">{link.name}</span>

@@ -63,6 +63,7 @@ export default function SettingsPage() {
     try { if (existing) all = JSON.parse(existing); } catch {}
     Object.assign(all, formData);
     localStorage.setItem("site-settings", JSON.stringify(all));
+    window.dispatchEvent(new Event("site-settings-changed"));
     showToast("已应用，刷新页面生效", "success");
   };
 
@@ -79,6 +80,7 @@ export default function SettingsPage() {
       } else if (section === "background") {
         payload.themeColors = formData.themeColors.split(",").map((s: string) => s.trim()).filter(Boolean);
         payload.bgImages = formData.bgImages.split("\n").map((s: string) => s.trim()).filter(Boolean);
+        payload.bgBlur = formData.bgBlur;
       } else if (section === "music") {
         payload.cloudMusicIds = formData.cloudMusicIds.split("\n").map((s: string) => s.trim()).filter(Boolean);
       } else if (section === "footer") {

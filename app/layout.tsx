@@ -9,6 +9,7 @@ import BackgroundSlider from "../components/BackgroundSlider";
 import BackgroundEffects from "../components/BackgroundEffects";
 import SplashScreen from "../components/SplashScreen";
 import CyberCat from "../components/CyberCat";
+import DynamicBlurOverlay from "../components/DynamicBlurOverlay";
 import { siteConfig } from "../siteConfig";
 
 export const metadata: Metadata = {
@@ -59,19 +60,31 @@ export default function RootLayout({
                 <div id="app-mount-root" className="flex-1 flex flex-col transition-opacity duration-1000">
                   <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
                     {!siteConfig.useGradient && <BackgroundSlider />}
-                    <div className="absolute inset-0 z-[-9] bg-white/30 dark:bg-slate-900/40 backdrop-blur-md transition-colors duration-1000"></div>
+
+                    <DynamicBlurOverlay />
 
                     <div
-                      className="absolute inset-0 z-[-8] opacity-60 dark:opacity-20 mix-blend-color transition-opacity duration-1000 transform-gpu"
+                      className="absolute inset-0 z-[-8] opacity-50 dark:opacity-15 mix-blend-color transition-opacity duration-1000 transform-gpu"
                       style={{
-                        background: `linear-gradient(-45deg, ${siteConfig.themeColors.join(", ")})`,
+                        background: `linear-gradient(135deg, ${siteConfig.themeColors.join(", ")})`,
                         backgroundSize: "400% 400%",
-                        animation: "gradientMove 15s ease infinite",
+                        animation: "gradient-mesh 20s ease infinite",
                       }}
                     ></div>
 
-                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/40 dark:bg-indigo-900/20 blur-[100px] rounded-full z-[-7] md:mix-blend-overlay"></div>
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-400/30 dark:bg-purple-900/30 blur-[100px] rounded-full z-[-7] md:mix-blend-overlay"></div>
+                    <div className="absolute top-[5%] left-[10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-indigo-400/15 dark:bg-indigo-600/10 blur-[120px] rounded-full z-[-7] animate-breathe"></div>
+                    <div className="absolute top-[40%] right-[5%] w-[40vw] h-[40vw] max-w-[500px] max-h-[500px] bg-purple-400/15 dark:bg-purple-600/8 blur-[100px] rounded-full z-[-7] animate-float-delayed"></div>
+                    <div className="absolute bottom-[10%] left-[30%] w-[35vw] h-[35vw] max-w-[400px] max-h-[400px] bg-pink-400/10 dark:bg-fuchsia-600/8 blur-[90px] rounded-full z-[-7] animate-float"></div>
+
+                    <div className="absolute top-[15%] right-[20%] w-[3px] h-[3px] bg-indigo-400/60 rounded-full z-[-5] animate-orbit">
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 bg-indigo-300/40 rounded-full blur-[2px]"></div>
+                    </div>
+                    <div className="absolute top-[25%] left-[25%] w-[2px] h-[2px] bg-purple-400/50 rounded-full z-[-5] animate-orbit-reverse">
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 bg-purple-300/30 rounded-full blur-[2px]"></div>
+                    </div>
+
+                    <div className="absolute top-[60%] left-[60%] w-[200px] h-[200px] border border-indigo-300/10 dark:border-indigo-500/5 rounded-full z-[-4] animate-pulse-glow"></div>
+                    <div className="absolute top-[20%] left-[70%] w-[150px] h-[150px] border border-purple-300/10 dark:border-purple-500/5 rounded-full z-[-4] animate-pulse-glow" style={{ animationDelay: '1.5s' }}></div>
 
                     <div className="hidden md:block absolute inset-0 w-full h-full z-[-6]">
                       <BackgroundEffects />
@@ -80,28 +93,16 @@ export default function RootLayout({
 
                   <div className="relative z-10 flex-1 flex flex-col">{children}</div>
                 </div>
-
-                <style
-                  suppressHydrationWarning
-                  dangerouslySetInnerHTML={{
-                    __html: `
-                  @keyframes gradientMove { 
-                    0% { background-position: 0% 50%; } 
-                    50% { background-position: 100% 50%; } 
-                    100% { background-position: 0% 50%; } 
-                  }
-                `,
-                  }}
-                />
-
-                <div className="hidden md:block">
-                  <ClickEffect />
-                </div>
               </MusicProvider>
             </ToastProvider>
           </OperationProvider>
         </ThemeProvider>
+
         <CyberCat />
+
+        <div className="hidden md:block">
+          <ClickEffect />
+        </div>
       </body>
     </html>
   );

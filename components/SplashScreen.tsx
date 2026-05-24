@@ -4,16 +4,36 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { siteConfig } from "../siteConfig";
 
+interface StarState {
+  width: string;
+  height: string;
+  left: string;
+  top: string;
+  animationDelay: string;
+  animationDuration: string;
+}
+
 export default function SplashScreen() {
   const [show, setShow] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [stars, setStars] = useState<StarState[]>([]);
 
   useEffect(() => {
     setIsMounted(true);
     const hasSeenSplash = sessionStorage.getItem("hasSeenSplash") === "true";
 
     if (!hasSeenSplash) {
+      setStars(
+        Array.from({ length: 30 }).map(() => ({
+          width: `${2 + Math.random() * 4}px`,
+          height: `${2 + Math.random() * 4}px`,
+          left: `${Math.random() * 100}%`,
+          top: `${Math.random() * 100}%`,
+          animationDelay: `${Math.random() * 3}s`,
+          animationDuration: `${2 + Math.random() * 3}s`,
+        }))
+      );
       setShow(true);
       const interval = setInterval(() => {
         setProgress((p) => (p >= 100 ? 100 : p + 2));
@@ -53,18 +73,18 @@ export default function SplashScreen() {
           <div className="fixed inset-0 z-[-1]">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-950 via-slate-950 to-purple-950" />
             <div className="absolute inset-0 opacity-30">
-              {[...Array(30)].map((_, i) => (
+              {stars.map((star, i) => (
                 <div
                   key={i}
                   className="absolute rounded-full animate-pulse"
                   style={{
-                    width: `${2 + Math.random() * 4}px`,
-                    height: `${2 + Math.random() * 4}px`,
-                    left: `${Math.random() * 100}%`,
-                    top: `${Math.random() * 100}%`,
+                    width: star.width,
+                    height: star.height,
+                    left: star.left,
+                    top: star.top,
                     backgroundColor: "rgba(129, 140, 248, 0.6)",
-                    animationDelay: `${Math.random() * 3}s`,
-                    animationDuration: `${2 + Math.random() * 3}s`,
+                    animationDelay: star.animationDelay,
+                    animationDuration: star.animationDuration,
                   }}
                 />
               ))}

@@ -6,9 +6,12 @@ import { ReactNode } from "react";
 export default function PageTransition({ children }: { children: ReactNode }) {
   return (
     <motion.div
-      initial={{ y: 20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ ease: "easeOut", duration: 0.8 }}
+      initial={{ opacity: 0, y: 24, filter: "blur(4px)" }}
+      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      transition={{
+        duration: 0.7,
+        ease: [0.25, 0.46, 0.45, 0.94],
+      }}
     >
       {children}
     </motion.div>

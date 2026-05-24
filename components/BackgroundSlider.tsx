@@ -5,35 +5,29 @@ import { siteConfig } from "../siteConfig";
 
 export default function BackgroundSlider() {
   const [index, setIndex] = useState(0);
+  const [images, setImages] = useState(siteConfig.bgImages);
+  const [blurValue, setBlurValue] = useState(siteConfig.bgBlur ?? 8);
+  const [mounted, setMounted] = useState(false);
 
-  const getImages = (): string[] => {
-    if (typeof window === "undefined") return siteConfig.bgImages;
-    const saved = localStorage.getItem("site-settings");
-    if (saved) {
-      try {
+  useEffect(() => {
+    let imgs = siteConfig.bgImages;
+    let blur = siteConfig.bgBlur ?? 8;
+    try {
+      const saved = localStorage.getItem("site-settings");
+      if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.bgImages && Array.isArray(parsed.bgImages) && parsed.bgImages.length > 0) {
-          return parsed.bgImages.filter(Boolean);
+          imgs = parsed.bgImages.filter(Boolean);
         }
-      } catch {}
-    }
-    return siteConfig.bgImages;
-  };
-
-  const getBlur = (): number => {
-    if (typeof window === "undefined") return 8;
-    const saved = localStorage.getItem("site-settings");
-    if (saved) {
-      try {
-        const p = JSON.parse(saved);
-        if (typeof p.bgBlur === "number") return p.bgBlur;
-      } catch {}
-    }
-    return 8;
-  };
-
-  const images = getImages();
-  const blurValue = getBlur();
+        if (typeof parsed.bgBlur === "number") {
+          blur = parsed.bgBlur;
+        }
+      }
+    } catch {}
+    setImages(imgs);
+    setBlurValue(blur);
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (images.length <= 1) return;
@@ -42,6 +36,8 @@ export default function BackgroundSlider() {
     }, 10000);
     return () => clearInterval(timer);
   }, [images.length]);
+
+  if (images.length === 0) return null;
 
   return (
     <div className="absolute inset-0 z-[-10] overflow-hidden">
@@ -56,8 +52,7 @@ export default function BackgroundSlider() {
             filter: `blur(${blurValue}px) brightness(0.4)`,
             transform: "scale(1.1)",
             opacity: i === index ? 1 : 0,
-            visibility:
-              Math.abs(i - index) <= 1 || (i === images.length - 1 && index === 0) ? "visible" : "hidden",
+            visibility: Math.abs(i - index) <= 1 || (i === images.length - 1 && index === 0) ? "visible" : ("hidden" as any),
           }}
         />
       ))}

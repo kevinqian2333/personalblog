@@ -1,6 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useRef, useState, useCallback, useEffect } from "react";
+import { motion } from "framer-motion";
+import { siteConfig as defaultConfig } from "../siteConfig";
 import { getSiteConfig } from "../lib/config";
 
 export default function ProfileCard({
@@ -13,32 +16,88 @@ export default function ProfileCard({
   photoCount: number;
 }) {
   const router = useRouter();
-  const config = getSiteConfig();
+  const [config, setConfig] = useState(defaultConfig);
 
-  const copyToClipboard = (text: string, label: string) => {
+  useEffect(() => {
+    setConfig(getSiteConfig());
+  }, []);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+  const [glowX, setGlowX] = useState(50);
+  const [glowY, setGlowY] = useState(50);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateXVal = ((y - centerY) / centerY) * -6;
+    const rotateYVal = ((x - centerX) / centerX) * 6;
+    setRotateX(rotateXVal);
+    setRotateY(rotateYVal);
+    setGlowX((x / rect.width) * 100);
+    setGlowY((y / rect.height) * 100);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setRotateX(0);
+    setRotateY(0);
+    setGlowX(50);
+    setGlowY(50);
+  }, []);
+
+  const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 
   return (
     <div
+      ref={cardRef}
       onClick={() => router.push("/about")}
-      className="md:col-span-7 rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl p-5 sm:p-6 md:p-8 flex flex-col justify-between transition-all duration-700 hover:scale-[1.01] cursor-pointer group relative overflow-hidden h-full min-h-[220px] md:min-h-[280px]"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="group glass-card-elevated rounded-3xl p-5 sm:p-6 md:p-8 flex flex-col justify-between cursor-pointer relative overflow-hidden h-full min-h-[220px] md:min-h-[280px] transition-shadow duration-300 hover-glow"
+      style={{
+        transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
+        transition: "transform 0.15s ease-out, box-shadow 0.4s ease",
+      }}
     >
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at ${glowX}% ${glowY}%, rgba(99,102,241,0.08) 0%, transparent 60%)`,
+        }}
+      />
+
       <div className="flex items-start justify-between relative z-10">
         <div className="flex items-center gap-4 md:gap-6 w-full">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl md:rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 p-1 shadow-lg flex-shrink-0 transition-transform duration-500 group-hover:rotate-3">
-            <img
-              src={config.avatarUrl}
-              alt="avatar"
-              className="w-full h-full rounded-lg md:rounded-xl object-cover bg-white"
-              loading="lazy"
+          <div className="relative flex-shrink-0">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+              className="absolute -inset-1 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              style={{
+                background: "conic-gradient(from 0deg, #818cf8, #a78bfa, #e879f9, #818cf8)",
+                filter: "blur(4px)",
+              }}
             />
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl md:rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-[3px] shadow-lg transition-transform duration-500 group-hover:scale-105">
+              <img
+                src={config.avatarUrl}
+                alt="avatar"
+                className="w-full h-full rounded-lg md:rounded-xl object-cover bg-white"
+                loading="lazy"
+              />
+            </div>
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-1 md:mb-2 pb-1 leading-snug tracking-wider transition-colors duration-700 truncate">
               {config.authorName}
             </h1>
-            <p className="text-xs sm:text-sm md:text-base text-slate-700 dark:text-slate-300 font-medium leading-relaxed max-w-md transition-colors duration-700 line-clamp-2 md:line-clamp-none">
+            <p className="text-xs sm:text-sm md:text-base text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-md transition-colors duration-700 line-clamp-2 md:line-clamp-none">
               {config.bio}
             </p>
           </div>
@@ -54,9 +113,9 @@ export default function ProfileCard({
 
         <div className="flex gap-2 md:gap-3 flex-wrap justify-center md:justify-end w-full md:w-auto" onClick={(e) => e.stopPropagation()}>
           <SocialBtn type="github" url={config.social?.github} />
-          <SocialBtn type="email" onClick={() => copyToClipboard(config.social?.email || "", "邮箱")} />
-          <SocialBtn type="qq" onClick={() => copyToClipboard(config.social?.qq || "", "QQ号")} />
-          <SocialBtn type="wechat" onClick={() => copyToClipboard(config.social?.wechat || "", "微信号")} />
+          <SocialBtn type="email" onClick={() => copyToClipboard(config.social?.email || "")} />
+          <SocialBtn type="qq" onClick={() => copyToClipboard(config.social?.qq || "")} />
+          <SocialBtn type="wechat" onClick={() => copyToClipboard(config.social?.wechat || "")} />
         </div>
       </div>
     </div>
@@ -65,18 +124,31 @@ export default function ProfileCard({
 
 function StatItem({ count, label, color }: { count: number; label: string; color: string }) {
   return (
-    <div className="text-center group/stat px-2">
-      <div className={`text-xl md:text-2xl font-black ${color} transition-transform group-hover/stat:scale-110`}>
+    <motion.div
+      whileHover={{ scale: 1.15, y: -2 }}
+      className="text-center group/stat px-2 cursor-default"
+    >
+      <motion.div
+        className={`text-xl md:text-2xl font-black ${color} transition-all duration-300`}
+      >
         {count}
-      </div>
-      <div className="text-[9px] md:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5">
+      </motion.div>
+      <div className="text-[9px] md:text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5 transition-colors group-hover/stat:text-indigo-500">
         {label}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function SocialBtn({ type, url, onClick }: { type: string; url?: string; onClick?: () => void }) {
+  const [ripple, setRipple] = useState(false);
+
+  const handleClick = (e: React.MouseEvent) => {
+    setRipple(true);
+    setTimeout(() => setRipple(false), 600);
+    onClick?.();
+  };
+
   const getIcon = () => {
     switch (type) {
       case "github":
@@ -108,20 +180,26 @@ function SocialBtn({ type, url, onClick }: { type: string; url?: string; onClick
     }
   };
 
-  const content = (
-    <div
-      onClick={onClick}
-      className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/50 dark:bg-slate-700/50 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white transition-all duration-300 border border-white/40 dark:border-white/10 shadow-sm"
-      title={type}
+  const btnContent = (
+    <motion.div
+      whileHover={{ scale: 1.12, y: -2 }}
+      whileTap={{ scale: 0.9 }}
+      onClick={handleClick}
+      className="relative w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/50 dark:bg-slate-700/50 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-white dark:hover:text-white transition-colors duration-300 border border-white/40 dark:border-white/10 shadow-sm overflow-hidden group/btn"
     >
-      {getIcon()}
-    </div>
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
+      <span className="relative z-10">{getIcon()}</span>
+      {ripple && (
+        <span className="absolute inset-0 bg-white/30 rounded-xl animate-ping" />
+      )}
+    </motion.div>
   );
+
   return url ? (
     <a href={url} target="_blank" rel="noopener noreferrer">
-      {content}
+      {btnContent}
     </a>
   ) : (
-    content
+    btnContent
   );
 }

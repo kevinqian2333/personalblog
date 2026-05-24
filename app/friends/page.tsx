@@ -1,10 +1,32 @@
-import { friends } from "../../data/friends";
-import { siteConfig } from "../../siteConfig";
+"use client";
+
+import { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar";
 import PageTransition from "../../components/PageTransition";
 import FloatingPlayer from "../../components/FloatingPlayer";
+import { getSiteConfig } from "../../lib/config";
+
+interface Friend {
+  name: string;
+  url: string;
+  avatar: string;
+  description: string;
+}
 
 export default function FriendsPage() {
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [config, setConfig] = useState({ friendLinkApplyFormat: "", friendLinkIntro: "" });
+
+  useEffect(() => {
+    fetch("/api/friends")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.friends && d.friends.length > 0) setFriends(d.friends);
+      })
+      .catch(() => {});
+    setConfig(getSiteConfig() as any);
+  }, []);
+
   return (
     <div className="min-h-screen relative pb-10">
       <Navbar />
@@ -52,10 +74,10 @@ export default function FriendsPage() {
               申请友链
             </h2>
             <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
-              欢迎交换友链！请按照以下格式在评论区留言，我会尽快添加～
+              {config.friendLinkIntro || "欢迎交换友链！请按照以下格式在评论区留言，我会尽快添加～"}
             </p>
             <pre className="bg-slate-100 dark:bg-slate-900/60 rounded-xl p-4 text-xs sm:text-sm text-slate-700 dark:text-slate-300 overflow-x-auto whitespace-pre-wrap border border-slate-200 dark:border-slate-700">
-              {siteConfig.friendLinkApplyFormat}
+              {config.friendLinkApplyFormat}
             </pre>
           </div>
         </div>

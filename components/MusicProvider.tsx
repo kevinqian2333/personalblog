@@ -75,7 +75,21 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
     const fetchMusicData = async () => {
       try {
-        const fetchPromises = siteConfig.cloudMusicIds.map((id) =>
+        let ids = siteConfig.cloudMusicIds;
+        try {
+          const saved = localStorage.getItem("site-settings");
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed.cloudMusicIds) && parsed.cloudMusicIds.length > 0) {
+              ids = parsed.cloudMusicIds;
+            }
+          }
+        } catch {}
+        if (!ids || ids.length === 0) {
+          if (isMounted) setIsLoading(false);
+          return;
+        }
+        const fetchPromises = ids.map((id) =>
           fetch(`https://api.injahow.cn/meting/?server=netease&type=song&id=${id}`)
             .then((res) => res.json())
             .catch(() => null)
@@ -107,8 +121,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    if (siteConfig.cloudMusicIds?.length > 0) fetchMusicData();
-    else setIsLoading(false);
+    fetchMusicData();
 
     return () => {
       isMounted = false;

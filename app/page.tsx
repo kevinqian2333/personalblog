@@ -18,6 +18,7 @@ import LatestPostsCarousel from "../components/LatestPostsCarousel";
 import LatestChatterCarousel from "../components/LatestChatterCarousel";
 import BackgroundEffects from "../components/BackgroundEffects";
 import FloatingPlayer from "../components/FloatingPlayer";
+import AnimatedCard from "../components/AnimatedCard";
 import type { PostMeta } from "../lib/types";
 
 function formatUpdateTime(dateString: string) {
@@ -100,56 +101,71 @@ export default function Home() {
 
             <main className="flex flex-col gap-6 w-full mt-6">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
-                <div className="col-span-1 lg:col-span-7 flex flex-col">
+                <AnimatedCard delay={0} direction="left" className="col-span-1 lg:col-span-7 flex flex-col">
                   <ProfileCard postCount={allPosts.length} chatterCount={0} photoCount={realPhotoCount} />
-                </div>
-                <div className="col-span-1 lg:col-span-5 flex flex-col">
+                </AnimatedCard>
+                <AnimatedCard delay={0.1} direction="right" className="col-span-1 lg:col-span-5 flex flex-col">
                   <CloudPlayer />
-                </div>
+                </AnimatedCard>
               </div>
 
-              <div className="w-full mt-[-10px]">
+              <AnimatedCard delay={0.15} className="w-full mt-[-10px]">
                 <LyricBar />
-              </div>
+              </AnimatedCard>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
-                <div className="col-span-1 lg:col-span-4 flex flex-col min-h-[300px]">
+                <AnimatedCard delay={0.2} direction="left" className="col-span-1 lg:col-span-4 flex flex-col min-h-[300px]">
                   <LatestPostsCarousel posts={top5Posts} />
-                </div>
+                </AnimatedCard>
 
                 <div className="col-span-1 lg:col-span-8 flex flex-col gap-6">
-                  <Link
-                    href="/photowall"
-                    className="w-full rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl overflow-hidden transition-all duration-700 hover:scale-[1.02] relative group min-h-[200px] sm:min-h-[220px] flex-shrink-0"
-                  >
-                    <img
-                      src={latestAlbum.cover}
-                      className="w-full h-full absolute inset-0 object-cover transition-transform duration-700 group-hover:scale-105 opacity-90"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/30 dark:bg-black/50 group-hover:bg-black/10 transition-colors duration-500"></div>
-                    <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 right-6">
-                      <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 underline decoration-pink-400">
-                        {latestAlbum.title}
-                      </h3>
-                      <p className="text-white/90 text-sm sm:text-lg line-clamp-1">{latestAlbum.description}</p>
-                    </div>
-                  </Link>
+                  <AnimatedCard delay={0.25} direction="right">
+                    <Link
+                      href="/photowall"
+                      className="w-full rounded-3xl overflow-hidden transition-all duration-700 hover:scale-[1.02] relative group min-h-[200px] sm:min-h-[220px] flex-shrink-0 block"
+                      style={{
+                        background: "rgba(255,255,255,0.25)",
+                        backdropFilter: "blur(20px)",
+                        border: "1px solid rgba(255,255,255,0.3)",
+                        boxShadow: "0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.3)",
+                      }}
+                    >
+                      <img
+                        src={latestAlbum.cover}
+                        className="w-full h-full absolute inset-0 object-cover transition-transform duration-700 group-hover:scale-105 opacity-90"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent group-hover:from-black/40 transition-colors duration-500"></div>
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+                        style={{
+                          background: "radial-gradient(circle at 30% 70%, rgba(99,102,241,0.2) 0%, transparent 50%)",
+                        }}
+                      />
+                      <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 right-6">
+                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">
+                          {latestAlbum.title}
+                        </h3>
+                        <p className="text-white/90 text-sm sm:text-lg line-clamp-1 drop-shadow">
+                          {latestAlbum.description}
+                        </p>
+                      </div>
+                    </Link>
+                  </AnimatedCard>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full flex-1">
-                    <div className="sm:col-span-2 flex flex-col min-h-[200px]">
+                    <AnimatedCard delay={0.3} className="sm:col-span-2 flex flex-col min-h-[200px]">
                       <LatestChatterCarousel chatters={[]} />
-                    </div>
-                    <div className="sm:col-span-1 flex flex-col min-h-[120px]">
+                    </AnimatedCard>
+                    <AnimatedCard delay={0.35} className="sm:col-span-1 flex flex-col min-h-[120px]">
                       <ThemeToggleBlock />
-                    </div>
+                    </AnimatedCard>
                   </div>
                 </div>
               </div>
 
-              <div className="w-full mt-4">
+              <AnimatedCard delay={0.4} className="w-full mt-4">
                 <SiteDashboard />
-              </div>
+              </AnimatedCard>
             </main>
           </div>
         </PageTransition>

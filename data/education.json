@@ -1,3 +1,10 @@
 {
-  "education": []
+  "education": [
+    {
+      "school": "1",
+      "degree": "",
+      "period": "",
+      "description": ""
+    }
+  ]
 }
