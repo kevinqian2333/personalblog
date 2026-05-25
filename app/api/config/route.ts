@@ -1,19 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { siteConfig as bundledConfig } from "../../../siteConfig";
 
 const CONFIG_PATH = path.join(process.cwd(), "siteConfig.ts");
 
 function readCurrentConfig(): Record<string, any> {
-  const raw = fs.readFileSync(CONFIG_PATH, "utf8");
-  const match = raw.match(/export const siteConfig = ([\s\S]*?);\s*$/);
-  if (!match) throw new Error("无法解析 siteConfig.ts");
-  try {
-    const fn = new Function(`return ${match[1]}`);
-    return fn();
-  } catch {
-    throw new Error("siteConfig.ts 格式错误，无法解析");
+  if (fs.existsSync(CONFIG_PATH)) {
+    const raw = fs.readFileSync(CONFIG_PATH, "utf8");
+    const match = raw.match(/export const siteConfig = ([\s\S]*?);\s*$/);
+    if (match) {
+      try {
+        const fn = new Function(`return ${match[1]}`);
+        return fn();
+      } catch {}
+    }
   }
+  return bundledConfig as unknown as Record<string, any>;
 }
 
 function stringifyValue(val: any, indent = 0): string {
@@ -80,16 +83,24 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const currentConfig = readCurrentConfig();
-
     const merged = deepMerge(currentConfig, body);
 
-    const content = generateConfigFile(merged);
-    fs.writeFileSync(CONFIG_PATH, content, "utf8");
+    let written = false;
+    try {
+      if (fs.existsSync(path.dirname(CONFIG_PATH))) {
+        const content = generateConfigFile(merged);
+        fs.writeFileSync(CONFIG_PATH, content, "utf8");
+        written = true;
+      }
+    } catch {}
 
     return NextResponse.json({
       success: true,
-      message: "站点配置已写入 siteConfig.ts，重新构建后生效",
+      message: written
+        ? "站点配置已写入 siteConfig.ts，重新构建后生效"
+        : "配置已接收（生产环境仅本地存储生效，本地开发保存后执行 npm run build 永久生效）",
       data: merged,
+      persisted: written,
     });
   } catch (e: any) {
     return NextResponse.json({ success: false, error: e.message }, { status: 500 });
