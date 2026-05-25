@@ -8,7 +8,7 @@ export const siteConfig = {
   navAfter: "幻想乡",
   avatarUrl: "https://bu.dusays.com/2026/03/24/69c1e38ac1846.jpg",
   useGradient: false,
-  bgBlur: 8,
+  bgBlur: 0,
   themeColors: ["#a18cd1", "#fbc2eb", "#a1c4fd", "#c2e9fb"],
   bgImages: ["https://bu.dusays.com/2026/03/24/69c1e38b4c370.jpg", "https://bu.dusays.com/2026/03/24/69c26fe4acdb5.jpg", "https://bu.dusays.com/2026/03/24/69c26fe4d9486.jpg"],
   defaultPostCover: "https://bu.dusays.com/2026/03/24/69c1e38b346cb.jpg",
